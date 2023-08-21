@@ -49,7 +49,7 @@ def linear_assignment(cost_matrix, thresh):
     return matches, unmatched_a, unmatched_b
 
 
-def ious(altrbs, bltrbs):
+def ious_disabled(altrbs, bltrbs):
     """
     Compute cost based on IoU
     :type altrbs: list[ltrb] | np.ndarray
@@ -65,8 +65,30 @@ def ious(altrbs, bltrbs):
         np.ascontiguousarray(altrbs, dtype=float),
         np.ascontiguousarray(bltrbs, dtype=float)
     )
+    # ious has shape [len(altrbs), len(bltbrs)]
 
     return ious
+
+
+def euclid(altrbs, bltrbs):
+    """
+    Compute cost based on euclidean distance
+    :type altrbs: list[ltrb] | np.ndarray
+    :type altrbs: list[ltrb] | np.ndarray
+
+    :rtype eucls np.ndarray
+    """
+    eucls = np.zeros((len(altrbs), len(bltrbs)), dtype=float)
+    if eucls.size == 0:
+        return eucls
+
+    # Calculate the Euclidean distance between each pair of points
+    altrbs = np.array(altrbs)[:, :2]
+    bltrbs = np.array(bltrbs)[:, :2]
+
+    eucls = np.array([np.linalg.norm(bltrbs - ltrb, axis=1) for ltrb in altrbs])
+
+    return 1.0 / eucls
 
 
 def iou_distance(atracks, btracks):
@@ -84,8 +106,9 @@ def iou_distance(atracks, btracks):
     else:
         altrbs = [track.ltrb for track in atracks]
         bltrbs = [track.ltrb for track in btracks]
-    _ious = ious(altrbs, bltrbs)
-    cost_matrix = 1 - _ious
+    # _ious = ious(altrbs, bltrbs)
+    # cost_matrix = 1 - _ious
+    cost_matrix = euclid(altrbs, bltrbs)
 
     return cost_matrix
 
